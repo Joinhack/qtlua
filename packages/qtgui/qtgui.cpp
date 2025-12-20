@@ -44,6 +44,8 @@
 #include <QTransform>
 #include <QVariant>
 #include <QVector>
+#include <QComboBox>
+#include <QMessageBox>
 #if HAVE_QTWEBKIT
 #include <QWebView>
 #endif
@@ -2372,7 +2374,48 @@ static struct luaL_Reg qwidget_lib[] = {
 do_qhook(qwidget)
 
 
+static int qcombobox_new(lua_State *L) {
+  QWidget *parent = luaQ_optqobject<QWidget>(L, 1);
+  QComboBox *w = new QComboBox(parent);
+  luaQ_pushqt(L, w, !parent);
+  return 1;
+}
 
+static int qcombobox_addItem(lua_State *L) {
+  QComboBox *c = luaQ_checkqobject<QComboBox>(L, 1);
+  const char *p = lua_tostring(L, 2);
+  c->addItem(p);
+  return 0;
+}
+
+static struct luaL_Reg qcombobox_lib[] = {
+    {"new", qcombobox_new},
+    {"addItem", qcombobox_addItem},
+    {0, 0}
+  };
+
+do_qhook(qcombobox)
+
+static int qmessagebox_new(lua_State *L) {
+  QWidget *parent = luaQ_optqobject<QWidget>(L, 1);
+  QMessageBox *w = new QMessageBox(parent);
+  luaQ_pushqt(L, w, !parent);
+  return 1;
+}
+
+static int qmessagebox_show(lua_State *L) {
+  QMessageBox *m = luaQ_checkqobject<QMessageBox>(L, 1);
+  m->exec();
+  return 0;
+}
+
+
+static struct luaL_Reg qmessagebox_lib[] = {
+    {"new", qmessagebox_new},
+    {"show", qmessagebox_show},
+    {0, 0}};
+
+do_qhook(qmessagebox)
 
 
 
@@ -2411,6 +2454,8 @@ luaopen_libqtgui(lua_State *L)
   QtLuaEngine::registerMetaObject(&QMenuBar::staticMetaObject);
   QtLuaEngine::registerMetaObject(&QStatusBar::staticMetaObject);
   QtLuaEngine::registerMetaObject(&QWidget::staticMetaObject);
+  QtLuaEngine::registerMetaObject(&QComboBox::staticMetaObject);
+  QtLuaEngine::registerMetaObject(&QMessageBox::staticMetaObject);
 
   // call hook for qobjects
 #define HOOK_QOBJECT(T, t) \
@@ -2447,6 +2492,8 @@ luaopen_libqtgui(lua_State *L)
   HOOK_QOBJECT(QWebView, qwebview);
 #endif
   HOOK_QOBJECT(QWidget, qwidget);  
+  HOOK_QOBJECT(QComboBox, qcombobox);  
+  HOOK_QOBJECT(QMessageBox, qmessagebox);  
 
   return 0;
 }
