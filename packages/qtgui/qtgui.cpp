@@ -2374,6 +2374,11 @@ static struct luaL_Reg qwidget_lib[] = {
 do_qhook(qwidget)
 
 
+
+
+
+
+
 static int qcombobox_new(lua_State *L) {
   QWidget *parent = luaQ_optqobject<QWidget>(L, 1);
   QComboBox *w = new QComboBox(parent);
@@ -2392,9 +2397,49 @@ static struct luaL_Reg qcombobox_lib[] = {
     {"new", qcombobox_new},
     {"addItem", qcombobox_addItem},
     {0, 0}
-  };
+};
+
 
 do_qhook(qcombobox)
+
+static int qtabwidget_new(lua_State *L) {
+  QWidget *parent = luaQ_optqobject<QWidget>(L, 1);
+  QTabWidget *w = new QTabWidget(parent);
+  luaQ_pushqt(L, w, !parent);
+  return 1;
+}
+
+static int qtabwidget_addTab(lua_State *L) {
+  QTabWidget *t = luaQ_checkqobject<QTabWidget>(L, 1);
+  QWidget *w = luaQ_checkqobject<QWidget>(L, 2);
+  QString label; 
+  if (lua_isstring(L, 3)) {
+    label = QString(lua_tostring(L, 3));
+  } else if (luaQ_isqvariant<QString>(L, 3)) {
+    label = luaQ_checkqvariant<QString>(L, 3);
+  } else {
+     luaL_error(L, "the parameter error.");
+     return 1;
+  }
+  int rs = t->addTab(w, label);
+  lua_pushnumber(L, rs);
+  return 1;
+}
+
+static int qtabwidget_clear(lua_State *L) {
+  QTabWidget *t = luaQ_checkqobject<QTabWidget>(L, 1);
+  t->clear();
+  return 0;
+}
+
+static struct luaL_Reg qtabwidget_lib[] = {
+    {"new", qtabwidget_new},
+    {"addTab", qtabwidget_addTab},
+    {"clear", qtabwidget_clear},
+    {0, 0}
+};
+
+do_qhook(qtabwidget)
 
 static int qmessagebox_new(lua_State *L) {
   QWidget *parent = luaQ_optqobject<QWidget>(L, 1);
@@ -2405,7 +2450,7 @@ static int qmessagebox_new(lua_State *L) {
 
 static int qmessagebox_show(lua_State *L) {
   QMessageBox *m = luaQ_checkqobject<QMessageBox>(L, 1);
-  m->exec();
+  m->show();
   return 0;
 }
 
@@ -2416,11 +2461,6 @@ static struct luaL_Reg qmessagebox_lib[] = {
     {0, 0}};
 
 do_qhook(qmessagebox)
-
-
-
-
-
 
 
 
@@ -2456,6 +2496,7 @@ luaopen_libqtgui(lua_State *L)
   QtLuaEngine::registerMetaObject(&QWidget::staticMetaObject);
   QtLuaEngine::registerMetaObject(&QComboBox::staticMetaObject);
   QtLuaEngine::registerMetaObject(&QMessageBox::staticMetaObject);
+  QtLuaEngine::registerMetaObject(&QTabWidget::staticMetaObject);
 
   // call hook for qobjects
 #define HOOK_QOBJECT(T, t) \
@@ -2491,9 +2532,10 @@ luaopen_libqtgui(lua_State *L)
 #if HAVE_QTWEBKIT
   HOOK_QOBJECT(QWebView, qwebview);
 #endif
-  HOOK_QOBJECT(QWidget, qwidget);  
+  HOOK_QOBJECT(QWidget, qwidget);
   HOOK_QOBJECT(QComboBox, qcombobox);  
-  HOOK_QOBJECT(QMessageBox, qmessagebox);  
+  HOOK_QOBJECT(QMessageBox, qmessagebox);
+  HOOK_QOBJECT(QTabWidget, qtabwidget);  
 
   return 0;
 }
@@ -2505,5 +2547,6 @@ luaopen_libqtgui(lua_State *L)
    c++-font-lock-extra-types: ("\\sw+_t" "\\(lua_\\)?[A-Z]\\sw*[a-z]\\sw*")
    End:
    ------------------------------------------------------------- */
+
 
 
