@@ -407,6 +407,15 @@ qstring_totable(lua_State *L)
 
 
 static int
+qstring_len(lua_State *L)
+{
+  QString s = luaQ_checkqvariant<QString>(L, 1);
+  lua_pushinteger(L, s.length());
+  return 1;
+}
+
+
+static int
 qstring_new(lua_State *L)
 {
   QString s;
@@ -432,6 +441,7 @@ qstring_new(lua_State *L)
 static const luaL_Reg qstring_lib[] = {
   {"totable", qstring_totable},
   {"new", qstring_new},
+  {"len", qstring_len},
   {0, 0}
 };
 
