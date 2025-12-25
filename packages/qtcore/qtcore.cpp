@@ -407,6 +407,16 @@ qstring_totable(lua_State *L)
 
 
 static int
+qstring_tostring(lua_State *L)
+{
+  QString s = luaQ_checkqvariant<QString>(L, 1);
+  QByteArray b = s.toLocal8Bit();
+  lua_pushlstring(L, b.constData(), b.length());
+  return 1;
+}
+
+
+static int
 qstring_len(lua_State *L)
 {
   QString s = luaQ_checkqvariant<QString>(L, 1);
@@ -440,6 +450,7 @@ qstring_new(lua_State *L)
 
 static const luaL_Reg qstring_lib[] = {
   {"totable", qstring_totable},
+  {"tostring", qstring_tostring},
   {"new", qstring_new},
   {"len", qstring_len},
   {0, 0}
